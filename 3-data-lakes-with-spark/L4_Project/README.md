@@ -1,82 +1,84 @@
-# Sparkify's Data Lake ELT process
+## Summary 
 
-## Summary
+A music streaming startup, Sparkify need to analyse its grwoing database of the streaming app. 
+The data currently resides in S3, in a directory of JSON logs on user activity
+on the app. 
 
- - [Introduction](#introduction)
- - [Getting started](#getting-started)
- - [Data sources](#data-sources)
- - [Parquet data schema](#parquet-data-schema)
- 
-## Introduction
+To allow Sparkify analyse the data, an ETL pipleline fro this. THe pipleine extracts data for storage on a data lake. 
 
-This project aims to create analytical _parquet_ tables on Amazon S3 using AWS ElasticMapReduce/Spark to extract, 
-load and transform songs data and event logs from the usage of the Sparkify app.
 
-## Getting started
+## Running ETL Script 
 
-This ELT process is a pretty simple process. If it's your first time running this project, you should make a copy of the `dl.cfg.example` file, configure your AWS credentials and save it as `dl.cfg`.
+```
+python etl.py
+```
 
-Then, just run inside your Spark master machine: `python etl.py`
+## Files in Repository
+* **[etl.py](etl.py)**: Script that extracts required information from logs stored in s3 buckets.
+* **[dl.cfg](dl.cfg)**: Config file
 
-## Data sources
+## How to Run
+Populate config file ```dl.cfg``` with AWS credentials
+Run inside Spark master machine: ```python etl.py```
 
-We will read basically two main data sources:
 
- - `s3a://udacity-dend/song_data/*/*/*` - JSON files containing meta information about song/artists data
- - `s3a://udacity-dend/log_data/*/*` - JSON files containing log events from the Sparkify app
- 
- ## Parquet data schema
- 
- After reading from these two data sources, we will transform it to the schema described below:
+## Dataset
+* **Song data**: ```s3://udacity-dend/song_data```
+* **Log data**: ```s3://udacity-dend/log_data```
+
+## Song ERD
+![song_erd](img/Song_ERD.png)
+
+* **Fact Table**: songplays
+* **Dimension Tables**: users, songs, artists and time.
+
+## Database Design
+
  
  #### Song Plays table
 
-- *Location:* `s3a://social-wiki-datalake/songplays.parquet`
 - *Type:* Fact table
 
 | Column | Type | Description |
 | ------ | ---- | ----------- |
 | `songplay_id` | `INTEGER` | The main identification of the table | 
-| `start_time` | `TIMESTAMP` | The timestamp that this song play log happened |
-| `user_id` | `INTEGER` | The user id that triggered this song play log. It cannot be null, as we don't have song play logs without being triggered by an user.  |
+| `start_time` | `TIMESTAMP` | The timestamp log |
+| `user_id` | `INTEGER` | The user id that triggered this song play log.|
 | `level` | `STRING` | The level of the user that triggered this song play log |
-| `song_id` | `STRING` | The identification of the song that was played. It can be null.  |
-| `artist_id` | `STRING` | The identification of the artist of the song that was played. |
+| `song_id` | `STRING` | The identification of the song that was played. |
+| `artist_id` | `STRING` | The identification of the artist of the song. |
 | `session_id` | `INTEGER` | The session_id of the user on the app |
-| `location` | `STRING` | The location where this song play log was triggered  |
+| `location` | `STRING` | Song play log location |
 | `user_agent` | `STRING` | The user agent of our app |
 
 #### Users table
 
-- *Location:* `s3a://social-wiki-datalake/users.parquet`
 - *Type:* Dimension table
 
 | Column | Type | Description |
 | ------ | ---- | ----------- |
 | `user_id` | `INTEGER` | The main identification of an user |
-| `first_name` | `STRING` | First name of the user, can not be null. It is the basic information we have from the user |
+| `first_name` | `STRING` | First name of the user.|
 | `last_name` | `STRING` | Last name of the user. |
-| `gender` | `STRING` | The gender is stated with just one character `M` (male) or `F` (female). Otherwise it can be stated as `NULL` |
+| `gender` | `STRING` | The gender is stated with just one character `M` (male) or `F` (female).|
 | `level` | `STRING` | The level stands for the user app plans (`premium` or `free`) |
 
 
 #### Songs table
 
-- *Location:* `s3a://social-wiki-datalake/songs.parquet`
 - *Type:* Dimension table
 
 | Column | Type | Description |
 | ------ | ---- | ----------- |
 | `song_id` | `STRING` | The main identification of a song | 
-| `title` | `STRING` | The title of the song. It can not be null, as it is the basic information we have about a song. |
-| `artist_id` | `STRING` | The artist id, it can not be null as we don't have songs without an artist, and this field also references the artists table. |
+| `title` | `STRING` | The title of the song.|
+| `artist_id` | `STRING` | The artist id |
 | `year` | `INTEGER` | The year that this song was made |
 | `duration` | `DOUBLE` | The duration of the song |
 
 
 #### Artists table
 
-- *Location:* `s3a://social-wiki-datalake/artists.parquet`
 - *Type:* Dimension table
 
 | Column | Type | Description |
@@ -94,7 +96,7 @@ We will read basically two main data sources:
 
 | Column | Type | Description |
 | ------ | ---- | ----------- |
-| `start_time` | `TIMESTAMP` | The timestamp itself, serves as the main identification of this table |
+| `start_time` | `TIMESTAMP` | The timestamp|
 | `hour` | `INTEGER` | The hour from the timestamp  |
 | `day` | `INTEGER` | The day of the month from the timestamp |
 | `week` | `INTEGER` | The week of the year from the timestamp |
